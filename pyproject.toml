@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "conc"
+version = "0.1.0"
+description = ""
+authors = ["ZUS666 <t4g1.86@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.2"
+uvicorn = "^0.27.0.post1"
+alembic = "^1.13.1"
+sqlalchemy = "^2.0.25"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.0"
+ruff = "^0.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+exclude = [".venv"]
+preview = true
+show-fixes = true
+ignore = ["TRY003", "ANN101", "EM", "FBT", "D100", "D104", "D200"]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.ruff.lint]
+ignore-init-module-imports = true
+extend-select = [
+  "UP",  # pyupgrade
+  "D",   # pydocstyle
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

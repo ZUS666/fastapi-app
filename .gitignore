@@ -1,0 +1,7 @@
+/.lprof
+/.ruff_cache
+/.venv
+/.vscode
+/__pycache__
+/database.py
+/example.csv
