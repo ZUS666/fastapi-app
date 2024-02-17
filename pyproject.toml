@@ -11,6 +11,7 @@ fastapi = "^0.109.2"
 uvicorn = "^0.27.0.post1"
 alembic = "^1.13.1"
 sqlalchemy = "^2.0.25"
+pydantic-settings = "^2.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -26,7 +27,6 @@ line-length = 100
 exclude = [".venv"]
 preview = true
 show-fixes = true
-ignore = ["TRY003", "ANN101", "EM", "FBT", "D100", "D104", "D200"]
 
 [tool.ruff.format]
 quote-style = "single"
@@ -36,6 +36,7 @@ lines-after-imports = 2
 
 [tool.ruff.lint]
 ignore-init-module-imports = true
+ignore = ["TRY003", "ANN101", "EM", "FBT", "D100", "D104", "D200", "D1"]
 extend-select = [
   "UP",  # pyupgrade
   "D",   # pydocstyle
