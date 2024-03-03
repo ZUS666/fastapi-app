@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "conc"
+name = "test-fastapi"
 version = "0.1.0"
 description = ""
 authors = ["ZUS666 <t4g1.86@gmail.com>"]
@@ -12,18 +12,26 @@ uvicorn = "^0.27.0.post1"
 alembic = "^1.13.1"
 sqlalchemy = "^2.0.25"
 pydantic-settings = "^2.1.0"
+asyncpg = "^0.29.0"
+pydantic = {extras = ["email"], version = "^2.6.1"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
 ruff = "^0.2.1"
+pytest = "^8.0.2"
+mypy = "^1.8.0"
+types-passlib = "^1.7.7.20240106"
+types-python-jose = "^3.3.4.20240106"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-line-length = 100
+line-length = 90
 exclude = [".venv"]
 preview = true
 show-fixes = true
@@ -33,10 +41,12 @@ quote-style = "single"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
+combine-as-imports = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.lint]
 ignore-init-module-imports = true
-ignore = ["TRY003", "ANN101", "EM", "FBT", "D100", "D104", "D200", "D1"]
+ignore = ["TRY003", "ANN101", "EM", "FBT", "D100", "D104", "D200", "D205", "D1"]
 extend-select = [
   "UP",  # pyupgrade
   "D",   # pydocstyle
@@ -44,3 +54,6 @@ extend-select = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.mypy]
+strict = true
