@@ -83,5 +83,10 @@ class RefreshTokenSchema(RefreshToAccessSchema):
 
 class TokenResponseSchema(AccessTokenSchema, RefreshTokenSchema):
     """Response login schema."""
-
     pass
+
+
+class UserInfoSchema(BaseModel):
+    id: int
+    email: EmailStr
+    profile: ProfileSchema

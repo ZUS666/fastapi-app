@@ -4,6 +4,7 @@ from fastapi import Depends
 from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from core.db import Database
 from core.models import Profile, User
@@ -56,3 +57,11 @@ class UserRepository:
         await self.session.commit()
         await self.session.refresh(user)
         return user
+
+    async def get_user_info_by_id(self, user_id: int) -> User | None:
+        """Get user info by id."""
+        stmt = select(User).options(
+            joinedload(User.profile, innerjoin=True)).where(User.id == user_id)
+        user = await self.session.scalar(statement=stmt)
+        return user
+                

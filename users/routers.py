@@ -6,13 +6,14 @@ from users.schemas import (
     AccessTokenSchema,
     RefreshToAccessSchema,
     TokenResponseSchema,
+    UserInfoSchema,
     UserLoginSchema,
     UserQueriesSchema,
     UserRegistrationResponseSchema,
     UserRegistrationSchema,
     UserSchema,
 )
-from users.services import JWTService, UserService
+from users.services import JWTService, PermissionService, UserService
 
 
 router = APIRouter(prefix='/users')
@@ -26,7 +27,14 @@ async def get_users(
     """Get collection of users."""
     return await service.get(queries)
 
-
+@router.get('/me/')
+async def get_current_user_info(
+    user_id: Annotated[int, Depends(PermissionService.get_current_user_id)],
+    service: Annotated[UserService, Depends(UserService)]
+) -> UserInfoSchema:
+    """Get current user info."""
+    return await service.get_user_info(user_id)
+    
 @router.get('/{id}/')
 async def get_user(
     service: Annotated[UserService, Depends(UserService)], id: int
@@ -60,7 +68,3 @@ async def refresh_token(
 ) -> AccessTokenSchema:
     """Get new access token from refresh token."""
     return service.create_access_token_from_refresh(token_schema.refresh_token)
-
-
-# @router.get('/me/')
-# async def get_current_user_info()

@@ -2,6 +2,7 @@ import datetime as dt
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
 from jose import jwt
 from jose.exceptions import JWTError
@@ -11,8 +12,10 @@ from users.constants import ExceptionMessage, TokenEnum
 from users.repository import UserRepository
 from users.schemas import (
     AccessTokenSchema,
+    ProfileSchema,
     RefreshTokenSchema,
     TokenResponseSchema,
+    UserInfoSchema,
     UserLoginSchema,
     UserQueriesSchema,
     UserRegistrationResponseSchema,
@@ -73,8 +76,18 @@ class JWTService:
             refresh_token_expires_in=TokenEnum.refresh_token_expires.value,
         )
 
+    @classmethod
+    def get_user_id_from_access_token(cls, token: str) -> int:
+        """Get user id from token."""
+        return cls._get_user_id_from_token(token, TokenEnum.access)
+
+    @classmethod
+    def _get_user_id_from_refresh_token(cls, token: str) -> int:
+        """Get user id from token."""
+        return cls._get_user_id_from_token(token, TokenEnum.refresh)
+
     @staticmethod
-    def _get_user_id_from_access_token(token: str) -> int | None:
+    def _get_user_id_from_token(token: str, expected_type: TokenEnum) -> int:
         """Get user id from token."""
         invalid_token_error = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -87,30 +100,9 @@ class JWTService:
                 algorithms=TokenEnum.ALGORITHM.value,
             )
             user_id = payload.get('user_id')
-            if payload.get('token_type') == TokenEnum.access.value and isinstance(
-                user_id, int
-            ):
-                return user_id
-            raise invalid_token_error
-        except JWTError:
-            raise invalid_token_error
-
-    @staticmethod
-    def _get_user_id_from_token(token: str, expected_type: TokenEnum) -> int:
-        """Get user id from refresh token."""
-        invalid_token_error = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=ExceptionMessage.INVALID_TOKEN,
-        )
-        try:
-            payload: dict[str, str | int] = jwt.decode(
-                token=token,
-                key=settings.token.secret_key,
-                algorithms=TokenEnum.ALGORITHM.value,
-            )
-            user_id = payload.get('user_id')
-            if payload.get('token_type') == expected_type.value and isinstance(
-                user_id, int
+            if (
+                payload.get('token_type') == expected_type.value and
+                isinstance(user_id, int)
             ):
                 return user_id
             raise invalid_token_error
@@ -134,6 +126,13 @@ class JWTService:
         user_id = instance._get_user_id_from_token(token, TokenEnum.refresh)
         return instance._create_access_token(user_id)
 
+
+class PermissionService:
+    @staticmethod
+    async def get_current_user_id(
+        token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    ) -> int:
+        return JWTService.get_user_id_from_access_token(token.credentials)
 
 class UserService:
     def __init__(
@@ -187,3 +186,23 @@ class UserService:
                 detail=ExceptionMessage.INVALID_PASSWORD,
             )
         return JWTService.create_tokens(user.id)
+    
+    async def get_user_info(
+        self,
+        user_id: int
+    ) -> UserInfoSchema:
+        """Get user info."""
+        user = await self.repository.get_user_info_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=ExceptionMessage.USER_NOT_FOUND,
+            )
+        return UserInfoSchema(
+            id=user.id,
+            email=user.email,
+            profile=ProfileSchema(
+                first_name=user.profile.first_name,
+                last_name=user.profile.last_name
+            ),
+        )
