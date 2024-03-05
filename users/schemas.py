@@ -4,18 +4,20 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from users.constants import UsersOrderBy
-
+from core.core_types import UIDType
 
 class UserSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    user_id: UIDType
     email: EmailStr
     is_active: bool
     is_admin: bool
 
 
 class ProfileSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     first_name: str | None = None
     last_name: str | None = None
 
@@ -49,8 +51,9 @@ class UserRegistrationResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    user_id: UIDType
     email: EmailStr
+    profile: ProfileSchema | None = None
 
 
 class UserQueriesSchema(BaseModel):
@@ -58,7 +61,7 @@ class UserQueriesSchema(BaseModel):
 
     limit: Annotated[int, Query(min_value=1, max_value=20, default=10)]
     offset: Annotated[int, Query(min_value=0, default=0)]
-    order_by: Annotated[UsersOrderBy, Query(default=UsersOrderBy.id)]
+    order_by: Annotated[UsersOrderBy, Query(default=UsersOrderBy.user_id)]
 
 
 class UserLoginSchema(BaseModel):
@@ -87,6 +90,7 @@ class TokenResponseSchema(AccessTokenSchema, RefreshTokenSchema):
 
 
 class UserInfoSchema(BaseModel):
-    id: int
+    model_config = ConfigDict(from_attributes=True)
+    user_id: UIDType
     email: EmailStr
     profile: ProfileSchema

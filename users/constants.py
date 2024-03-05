@@ -2,7 +2,7 @@ import enum
 
 
 class UsersOrderBy(enum.StrEnum):
-    id = 'id'
+    user_id = 'user_id'
     email = 'email'
 
 

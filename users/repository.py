@@ -8,12 +8,14 @@ from sqlalchemy.orm import joinedload
 
 from core.db import Database
 from core.models import Profile, User
+from core.core_types import UIDType
 from users.schemas import UserQueriesSchema, UserRegistrationSchema
 
 
 class UserRepository:
     def __init__(
-        self, session: Annotated[AsyncSession, Depends(Database().get_session)]
+        self,
+        session: Annotated[AsyncSession, Depends(Database().get_session)]
     ) -> None:
         self.session = session
 
@@ -31,9 +33,9 @@ class UserRepository:
         users = await self.session.scalars(statement=stmt)
         return users.all()
 
-    async def get_by_id(self, id: int) -> User | None:
+    async def get_by_id(self, user_id: UIDType) -> User | None:
         """Get user by id."""
-        user = await self.session.get(User, id)
+        user = await self.session.get(User, user_id)
         return user
 
     async def get_by_email(self, email: EmailStr) -> User | None:
@@ -50,7 +52,7 @@ class UserRepository:
 
     async def create(self, user_schema: UserRegistrationSchema) -> User:
         """Create a new user in db."""
-        user = User(**user_schema.model_dump(exclude={'re_password'}))
+        user = User(**user_schema.model_dump(exclude={'re_password', 'profile'}))
         profile = Profile(user=user, **user_schema.profile.model_dump() if user_schema.profile else {})
         user.profile = profile
         self.session.add(user)
@@ -58,10 +60,11 @@ class UserRepository:
         await self.session.refresh(user)
         return user
 
-    async def get_user_info_by_id(self, user_id: int) -> User | None:
+    async def get_user_info_by_id(self, user_id: UIDType) -> User | None:
         """Get user info by id."""
         stmt = select(User).options(
-            joinedload(User.profile, innerjoin=True)).where(User.id == user_id)
+            joinedload(User.profile, innerjoin=True)).where(User.user_id == user_id)
         user = await self.session.scalar(statement=stmt)
         return user
-                
+
+    # async def patch_user_info_by_id(self,)

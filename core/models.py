@@ -8,13 +8,11 @@ from sqlalchemy.orm import (
     relationship,
 )
 
+from .core_types import UIDType
+
 
 class Base(DeclarativeBase):
     __abstract__ = True
-
-    id: Mapped[int] = mapped_column(
-        BigInteger, Identity(always=True, cycle=True), primary_key=True
-    )
 
     @declared_attr.directive
     def __tablename__(cls) -> str:
@@ -22,9 +20,10 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
+    user_id: Mapped[UIDType] = mapped_column(BigInteger, Identity(always=True, cycle=True), primary_key=True)
     email: Mapped[EmailStr] = mapped_column(
         String(100),
-        CheckConstraint("email ~ ''^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$''"),
+        CheckConstraint("email ~ ''^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Z|a-z]{2,}$''"),
         unique=True,
         comment='User email',
     )
@@ -48,31 +47,20 @@ class User(Base):
     )
 
 
-class UserRelationMixin:
-    _user_id_nullable: bool = False
-    _user_id_unique: bool = False
-    _user_back_populates: str | None = None
-
-    @declared_attr
-    def user_id(cls) -> Mapped[int]:
-        return mapped_column(
-            ForeignKey('users.id'),
-            unique=cls._user_id_unique,
-            nullable=cls._user_id_nullable,
-        )
-
-    @declared_attr
-    def user(cls) -> Mapped['User']:
-        return relationship(
-            'User',
-            back_populates=cls._user_back_populates,
-        )
-
-
-class Profile(Base, UserRelationMixin):
-    _user_id_unique: bool = True
-    _user_id_nullable: bool = False
-    _user_back_populates: str = 'profile'
-
-    first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+class Profile(Base):
+    user_id: Mapped[UIDType] = mapped_column(
+        ForeignKey('users.user_id', ondelete='CASCADE'),
+        primary_key=True
+    )    
+    first_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
+    )
+    last_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
+    )
+    user: Mapped['User'] = relationship(
+        'User',
+        back_populates='profile'
+    )

@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 from jose import jwt
 from jose.exceptions import JWTError
 from core.settings import settings
+from core.core_types import UIDType
 
 from users.constants import ExceptionMessage, TokenEnum
 from users.repository import UserRepository
@@ -38,7 +39,7 @@ class HashService:
 
 class JWTService:
     @staticmethod
-    def _create_token(user_id: int, expires_in: TokenEnum, token_type: TokenEnum) -> str:
+    def _create_token(user_id: UIDType, expires_in: TokenEnum, token_type: TokenEnum) -> str:
         """Create token."""
         expire = dt.datetime.now() + dt.timedelta(seconds=expires_in.value)
         data_to_encode = {
@@ -55,7 +56,7 @@ class JWTService:
 
     def _create_access_token(
         self,
-        user_id: int,
+        user_id: UIDType,
     ) -> AccessTokenSchema:
         """Create access token."""
         token = self._create_token(
@@ -66,7 +67,7 @@ class JWTService:
             access_token_expires_in=TokenEnum.access_token_expires.value,
         )
 
-    def _create_refresh_token(self, user_id: int) -> RefreshTokenSchema:
+    def _create_refresh_token(self, user_id: UIDType) -> RefreshTokenSchema:
         """Create refresh token."""
         token = self._create_token(
             user_id, TokenEnum.refresh_token_expires, TokenEnum.refresh
@@ -102,7 +103,7 @@ class JWTService:
             user_id = payload.get('user_id')
             if (
                 payload.get('token_type') == expected_type.value and
-                isinstance(user_id, int)
+                isinstance(user_id, UIDType)
             ):
                 return user_id
             raise invalid_token_error
@@ -110,7 +111,7 @@ class JWTService:
             raise invalid_token_error
 
     @classmethod
-    def create_tokens(cls, user_id: int) -> TokenResponseSchema:
+    def create_tokens(cls, user_id: UIDType) -> TokenResponseSchema:
         """Create access and refresh tokens."""
         instance = cls()
         access_token = instance._create_access_token(user_id)
@@ -145,9 +146,9 @@ class UserService:
         users = await self.repository.list(quieris)
         return [UserSchema.model_validate(user) for user in users]
 
-    async def get_by_id(self, id: int) -> UserSchema | None:
+    async def get_by_id(self, user_id: UIDType) -> UserSchema | None:
         """Get user by id from database."""
-        user = await self.repository.get_by_id(id)
+        user = await self.repository.get_by_id(user_id)
         if user:
             return UserSchema.model_validate(user)
         raise HTTPException(
@@ -156,7 +157,8 @@ class UserService:
         )
 
     async def create(
-        self, user: UserRegistrationSchema
+        self,
+        user: UserRegistrationSchema
     ) -> UserRegistrationResponseSchema:
         """Create new user in database."""
         user_exists = await self.repository.exists_by_email(user.email)
@@ -185,11 +187,11 @@ class UserService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=ExceptionMessage.INVALID_PASSWORD,
             )
-        return JWTService.create_tokens(user.id)
+        return JWTService.create_tokens(user.user_id)
     
     async def get_user_info(
         self,
-        user_id: int
+        user_id: UIDType
     ) -> UserInfoSchema:
         """Get user info."""
         user = await self.repository.get_user_info_by_id(user_id)
@@ -198,11 +200,12 @@ class UserService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ExceptionMessage.USER_NOT_FOUND,
             )
-        return UserInfoSchema(
-            id=user.id,
-            email=user.email,
-            profile=ProfileSchema(
-                first_name=user.profile.first_name,
-                last_name=user.profile.last_name
-            ),
-        )
+        return UserInfoSchema.model_validate(user)
+        # return UserInfoSchema(
+        #     user_id=user.user_id,
+        #     email=user.email,
+        #     profile=ProfileSchema(
+        #         first_name=user.profile.first_name,
+        #         last_name=user.profile.last_name
+        #     ),
+        # )
