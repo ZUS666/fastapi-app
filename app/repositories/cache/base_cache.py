@@ -19,3 +19,7 @@ class IBaseCache:
 
 class IUserBaseCache(IBaseCache):
     pass
+
+
+class IUserCodeCache(IUserBaseCache):
+    pass

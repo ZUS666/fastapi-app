@@ -7,7 +7,6 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from core.settings import settings
-from repositories.sql_db.models import User, Profile
 from repositories.sql_db.models.base import Base
 
 

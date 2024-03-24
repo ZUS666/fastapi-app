@@ -3,9 +3,9 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from repositories.sql_db.models import Profile, User
 from domain.custom_types.types_users import UIDType
 from domain.schemas.user_schemas import ProfileUpdateSchema, UserRegistrationInputSchema
+from repositories.sql_db.models import Profile, User
 
 
 class UserPostgres:

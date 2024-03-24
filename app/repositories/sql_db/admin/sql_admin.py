@@ -1,8 +1,9 @@
-from sqladmin import Admin
 import uvicorn
 from fastapi import FastAPI
-from repositories.sql_db.admin.admin_views import ProfileAdmin, UserAdmin
+from sqladmin import Admin
+
 from core.database import Database
+from repositories.sql_db.admin.admin_views import ProfileAdmin, UserAdmin
 
 
 def build_admin(app: FastAPI):

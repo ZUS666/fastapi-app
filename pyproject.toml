@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "test-fastapi"
+name = "fastapi-app"
 version = "0.1.0"
 description = ""
 authors = ["ZUS666 <t4g1.86@gmail.com>"]
@@ -20,6 +20,9 @@ redis = "^5.0.3"
 passlib = "^1.7.4"
 bcrypt = "^4.1.2"
 sqladmin = "^0.16.1"
+aiosmtplib = "^3.0.1"
+aio-pika = "^9.4.0"
+jinja2 = "^3.1.3"
 
 
 [tool.poetry.group.dev.dependencies]

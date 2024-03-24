@@ -1,5 +1,7 @@
 from sqladmin import ModelView
-from repositories.sql_db.models import User, Profile
+
+from repositories.sql_db.models import Profile, User
+
 
 class UserAdmin(ModelView, model=User):
     column_list = [

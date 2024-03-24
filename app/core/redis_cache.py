@@ -2,6 +2,7 @@ from redis import asyncio as redis
 
 from core.settings import settings
 
+
 class RedisCache:
     @staticmethod
     def connect():
