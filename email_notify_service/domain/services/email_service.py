@@ -10,9 +10,10 @@ from core.settings import settings
 from domain.constants import TEMPLATE_MAPPING, EmailSubject
 from domain.schemas.email_schema import EmailSendSchema
 from domain.schemas.email_subject import BaseContextSchema
+from domain.services.base_service import BaseSender
 
 
-class EmailSender:
+class EmailSender(BaseSender):
     def __init__(self) -> None:
         self.client = SMTP(
             hostname=settings.smtp.email_host,
@@ -20,33 +21,34 @@ class EmailSender:
             use_tls=settings.smtp.email_use_tls,
         )
 
-    async def login(self):
+    async def login(self) -> None:
+        """Login with smtp credentials."""
         await self.client.login(
-            settings.smtp.email_username,
-            settings.smtp.email_password
+            settings.smtp.email_username, settings.smtp.email_password
         )
 
-    async def send_email(self, schema: EmailSendSchema):
+    async def send_email(self, schema: EmailSendSchema) -> None:
+        """Send html template email."""
         try:
             await self.client.send_message(self._create_message(schema))
         except (SMTPDataError, SMTPResponseException) as error:
             logging.error(f'SMTP error: {error.code} {error.message}')
 
     def _create_message(self, schema: EmailSendSchema) -> MIMEMultipart:
-        message = MIMEMultipart("alternative")
-        message["From"] = settings.smtp.email_username
-        message["To"] = schema.to
-        message["Subject"] = schema.subject
+        """Create html email message."""
+        message = MIMEMultipart('alternative')
+        message['From'] = settings.smtp.email_username
+        message['To'] = schema.to
+        message['Subject'] = schema.subject
 
         html_message = MIMEText(
-            self._render_message(schema.context, schema.subject),
-            "html",
-            "utf-8"
+            self._render_message(schema.context, schema.subject), 'html', 'utf-8'
         )
         message.attach(html_message)
         return message
 
     def _render_message(self, context: BaseContextSchema, subject: EmailSubject) -> str:
+        """Render html template to str."""
         path = pathlib.Path(__file__).parent.parent / 'templates'
         template_loader = FileSystemLoader(path)
         template_env = Environment(loader=template_loader)
