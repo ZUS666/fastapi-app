@@ -1,8 +1,8 @@
 import uuid
 
 import bcrypt
-from adapters.broker.base import INotifyService
 
+from adapters.broker.notify_base import INotifyService
 from core.dependency import impl
 from domain.constants.user_constants import LEN_CONFIRMATION_CODE
 from domain.custom_types.types_users import UIDType
@@ -31,7 +31,6 @@ from domain.services.notify_service import CreateNotifySendSchema
 from repositories.cache.base_cache import IUserBaseCache, IUserCodeCache
 from repositories.repository import IUserRepository
 
-import asyncio
 
 class HashService:
     @staticmethod

@@ -1,7 +1,7 @@
-from adapters.broker.base import INotifyService
-from adapters.broker.rabbitmq.rabbit_notify import RabbitMQNotifyService
 from fastapi import FastAPI
 
+from adapters.broker.notify_base import INotifyService
+from adapters.broker.rabbitmq.rabbit_notify import RabbitMQNotifyService
 from api.v1.routers import router_v1
 from core.dependency import impl
 from core.exception_handler import ExceptionHandlerMiddleware

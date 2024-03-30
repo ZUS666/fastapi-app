@@ -3,15 +3,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from domain.custom_types.types_users import UIDType
 from domain.schemas.user_schemas import (
     ActivationUserSchema,
     ProfileSchema,
     ProfileUpdateSchema,
+    ResendActivationSchema,
     SuccessResponse,
     UserInfoSchema,
     UserRegistrationInputSchema,
-    ResendActivationSchema
 )
 from domain.services.auth_service import PermissionService
 from domain.services.user_service import UserService

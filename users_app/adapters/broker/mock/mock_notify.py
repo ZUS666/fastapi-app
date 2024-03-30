@@ -1,5 +1,4 @@
-from adapters.broker.base import INotifyService
-
+from adapters.broker.notify_base import INotifyService
 from domain.schemas.notify_schemas import NotifySendSchema
 
 

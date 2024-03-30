@@ -1,7 +1,7 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database import Database
+from users_app.repositories.sql_db.session import Database
 
 
 class BaseSQLAlchemyPostegres:

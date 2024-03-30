@@ -48,7 +48,7 @@ quote-style = "single"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-local-folder = ["api", "core", "db_models", "domain", "repositories"]
+known-local-folder = ["api", "core", "db_models", "domain", "repositories", "adapters"]
 
 combine-as-imports = true
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]

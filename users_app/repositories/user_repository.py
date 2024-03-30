@@ -1,7 +1,6 @@
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from repositories.sql_db.session import Database
 from core.dependency import impl
 from domain.custom_types.types_users import UIDType
 from domain.schemas.user_schemas import (
@@ -15,6 +14,7 @@ from domain.schemas.user_schemas import (
 from repositories.cache.base_cache import IUserBaseCache
 from repositories.repository import IUserRepository
 from repositories.sql_db.models.user import Profile, User
+from repositories.sql_db.session import Database
 from repositories.sql_db.user_db import UserPostgres
 
 

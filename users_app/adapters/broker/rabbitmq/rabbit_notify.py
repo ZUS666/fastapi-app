@@ -1,7 +1,7 @@
-from adapters.broker.base import INotifyService
-from adapters.broker.rabbitmq.constants import EXPIRES_EMAIL, AMQPValue
 from aio_pika import DeliveryMode, Message, connect
 
+from adapters.broker.notify_base import INotifyService
+from adapters.broker.rabbitmq.rabbit_constants import EXPIRES_EMAIL, AMQPValue
 from core.settings import settings
 from domain.schemas.notify_schemas import NotifySendSchema
 
