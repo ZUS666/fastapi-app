@@ -4,26 +4,23 @@ from pydantic import EmailStr
 
 from domain.custom_types.types_users import UIDType
 from domain.schemas.user_schemas import (
+    ProfileSchema,
     ProfileUpdateSchema,
+    UserCredentialsSchema,
     UserInfoSchema,
+    UserInfoSchemaActive,
     UserRegistrationInputSchema,
-    UserSchema,
 )
 
 
 class IUserRepository:
     @abstractmethod
-    async def get_by_id(self, user_id: UIDType) -> UserSchema | None:
-        """Get user by id."""
-        pass
-
-    @abstractmethod
-    async def get_by_email(self, email: EmailStr) -> UserSchema | None:
+    async def get_by_email(self, email: EmailStr) -> UserCredentialsSchema | None:
         """Get user by email."""
         pass
 
     @abstractmethod
-    async def create(self, user_schema: UserRegistrationInputSchema) -> UserInfoSchema:
+    async def create(self, user_schema: UserRegistrationInputSchema) -> UserInfoSchema | None:
         """Create a new user in db."""
         pass
 
@@ -33,14 +30,14 @@ class IUserRepository:
         pass
 
     @abstractmethod
-    async def get_user_info_by_email(self, email: EmailStr) -> UserInfoSchema | None:
+    async def get_user_info_by_email(self, email: EmailStr) -> UserInfoSchemaActive | None:
         """Get user info by email."""
         pass
 
     @abstractmethod
     async def update_profile(
         self, user_id: UIDType, profile_schema: ProfileUpdateSchema
-    ) -> UserInfoSchema:
+    ) -> ProfileSchema:
         """Update user profile."""
         pass
 

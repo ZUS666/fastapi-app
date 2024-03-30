@@ -49,7 +49,7 @@ class HashService:
 
 class ActivationCodeService:
     def __init__(self):
-        self.cache: IUserBaseCache = impl.container.resolve(IUserCodeCache)
+        self.cache: IUserCodeCache = impl.container.resolve(IUserCodeCache)
 
     @staticmethod
     def _get_random_code() -> str:
@@ -63,9 +63,7 @@ class ActivationCodeService:
 
     async def verify_code(self, user_id: UIDType, code: str) -> bool:
         cached_code = await self.cache.get(str(user_id))
-        if not cached_code:
-            return False
-        return code == cached_code.decode()
+        return code == cached_code
 
 
 class UserService:
@@ -88,7 +86,7 @@ class UserService:
         user_login: UserLoginSchema,
     ) -> TokenResponseSchema:
         """Login user returning tokens."""
-        user: UserCredentialsSchema = await self.repository.get_by_email(user_login.email)
+        user: UserCredentialsSchema | None = await self.repository.get_by_email(user_login.email)
         if not user:
             raise UserNotFoundError
         if not user.is_active:
@@ -99,10 +97,10 @@ class UserService:
 
     async def get_user_info_by_id(self, user_id: UIDType) -> UserInfoSchema:
         """Get user info."""
-        user = await self.repository.get_user_info_by_id(user_id)
-        if not user:
+        user_schema = await self.repository.get_user_info_by_id(user_id)
+        if not user_schema:
             raise UserNotFoundError
-        return UserInfoSchema.model_validate(user)
+        return user_schema
 
     async def update_profile(
         self, user_id: UIDType, profile: ProfileUpdateSchema
@@ -115,6 +113,8 @@ class UserService:
         user = await self.repository.get_user_info_by_email(email.email)
         if not user:
             raise UserNotFoundError
+        if user.is_active:
+            raise UserAlreadyActivatedError
         await self._create_code_activation_notify_user(user)
         return SuccessResponse(success=True)
 

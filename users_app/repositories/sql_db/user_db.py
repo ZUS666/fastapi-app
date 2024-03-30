@@ -27,7 +27,7 @@ class UserPostgres:
         """Check if user exists by email."""
         stmt = select(select(User).where(User.email == email).exists())
         user = await self.session.scalar(statement=stmt)
-        return user
+        return True if user else False
 
     async def create(self, user_schema: UserRegistrationInputSchema) -> User:
         """Create a new user in db."""
@@ -40,7 +40,7 @@ class UserPostgres:
         await self.session.commit()
         return user
 
-    async def get_user_info_by_id(self, user_id: UIDType) -> User | None:
+    async def get_user_info_by_id(self, user_id: UIDType) -> User:
         """Get user info by id."""
         stmt = (
             select(User)
@@ -72,7 +72,6 @@ class UserPostgres:
         return profile
 
     async def activate_user(self, user_id: UIDType) -> None:
-        print(1111111111111111111111111)
         stmt = update(User).where(User.user_id == user_id).values(is_active=True)
         await self.session.execute(statement=stmt)
         await self.session.commit()

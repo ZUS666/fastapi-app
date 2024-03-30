@@ -16,6 +16,6 @@ class CreateNotifySendSchema:
         )
         return NotifySendSchema(
             to=user_schema.email,
-            subject=EmailSubject.activation_code.value,
+            subject=EmailSubject.activation_code,
             context=context,
         )

@@ -4,13 +4,11 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from domain.constants.user_constants import MaxLength
 from domain.custom_types.types_users import UIDType
+from domain.schemas.auth_schemas import UserLoginSchema
 
 
 class UserSchema(BaseModel):
     """User schema."""
-
-    model_config = ConfigDict(from_attributes=True)
-
     user_id: UIDType
     email: EmailStr
     is_active: bool
@@ -18,10 +16,8 @@ class UserSchema(BaseModel):
 
 
 class ProfileSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    first_name: str | None = None
-    last_name: str | None = None
+    first_name: Annotated[str, Field(max_length=MaxLength.FIRST_NAME)] | None = None
+    last_name: Annotated[str, Field(max_length=MaxLength.FIRST_NAME)] | None = None
 
 
 class UserRegistrationInputSchema(BaseModel):
@@ -48,40 +44,19 @@ class UserRegistrationInputSchema(BaseModel):
         return self
 
 
-class UserRegistrationOutputSchema(BaseModel):
-    """Schema for user registration response."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    user_id: UIDType
-    email: EmailStr
-    profile: ProfileSchema
-
-
 class UserInfoSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
     user_id: UIDType
     email: EmailStr
     profile: ProfileSchema
 
 
-class UserLoginSchema(BaseModel):
-    """Schema for user login."""
-
-    email: EmailStr
-    password: str
+class UserInfoSchemaActive(UserInfoSchema):
+    is_active: bool
 
 
 class UserCredentialsSchema(UserLoginSchema):
     user_id: UIDType
     is_active: bool
-
-
-class ProfileSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    first_name: Annotated[str, Field(max_length=MaxLength.FIRST_NAME)] | None = None
-    last_name: Annotated[str, Field(max_length=MaxLength.FIRST_NAME)] | None = None
 
 
 class ProfileUpdateSchema(ProfileSchema):

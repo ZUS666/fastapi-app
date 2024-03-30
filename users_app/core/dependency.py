@@ -5,18 +5,17 @@ from punq import Container
 
 
 class Impl:
-    _instances = {}
+    _instances: set[Self] = {}
 
     def __init__(self) -> None:
         self.container: Container = Container()
 
     def __call__(self, *args, **kwargs) -> Self:
         if self not in self._instances:
-            instance = super().__call__(*args, **kwargs)
-            self._instances[self] = instance
-        return self._instances[self]
+            self._instances.add(self)
+        return self._instances[0]
 
-    def register_all(self, objs: tuple[Any, Any]) -> None:
+    def register_all(self, objs: tuple[tuple[Any, Any], ...]) -> None:
         for obj in objs:
             self.container.register(*obj)
 

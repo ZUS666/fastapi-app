@@ -1,33 +1,23 @@
-from abc import abstractmethod
-
-from pydantic import BaseModel
+from abc import ABC, abstractmethod
 
 from domain.schemas.user_schemas import UserInfoSchema
 
 
-class IBaseCache:
+class IUserBaseCache(ABC):
     @abstractmethod
-    async def get(self, key: str) -> BaseModel:
-        pass
-
-    @abstractmethod
-    async def set(self, key: str, schema: BaseModel) -> None:
-        pass
-
-    @abstractmethod
-    async def delete(self, key: str) -> None:
-        pass
-
-
-class IUserBaseCache(IBaseCache):
-    @abstractmethod
-    async def get(self, key: str) -> UserInfoSchema:
-        pass
+    async def get(self, key: str) -> UserInfoSchema | None:
+        raise NotImplementedError
 
     @abstractmethod
     async def set(self, key: str, schema: UserInfoSchema) -> None:
-        pass
+        raise NotImplementedError
 
 
-class IUserCodeCache(IUserBaseCache):
-    pass
+class IUserCodeCache(ABC):
+    @abstractmethod
+    async def get(self, key: str) -> str | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def set(self, key: str, code: str) -> None:
+        raise NotImplementedError
