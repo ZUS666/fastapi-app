@@ -47,8 +47,16 @@ class UserPostgres:
             .options(joinedload(User.profile, innerjoin=True))
             .where(User.user_id == user_id)
         )
-        user = await self.session.scalar(statement=stmt)
-        return user
+        return await self.session.scalar(statement=stmt)
+
+    async def get_user_info_by_email(self, email: EmailStr) -> User | None:
+        """"Get user info by email."""
+        stmt = (
+            select(User)
+            .where(User.email == email)
+            .options(joinedload(User.profile, innerjoin=True))
+        )
+        return await self.session.scalar(statement=stmt)
 
     async def update_profile(
         self, user_id: UIDType, profile_schema: ProfileUpdateSchema
@@ -62,3 +70,9 @@ class UserPostgres:
         profile = await self.session.scalar(statement=stmt)
         await self.session.commit()
         return profile
+
+    async def activate_user(self, user_id: UIDType) -> None:
+        print(1111111111111111111111111)
+        stmt = update(User).where(User.user_id == user_id).values(is_active=True)
+        await self.session.execute(statement=stmt)
+        await self.session.commit()

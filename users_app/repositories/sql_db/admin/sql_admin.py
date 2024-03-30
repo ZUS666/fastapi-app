@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
 
-from core.database import Database
+from repositories.sql_db.session import Database
 from repositories.sql_db.admin.admin_views import ProfileAdmin, UserAdmin
 
 

@@ -22,11 +22,6 @@ class IUserRepository:
         """Get user by email."""
         pass
 
-    # @abstractmethod
-    # async def exists_by_email(self, email: EmailStr) -> bool | None:
-    #     """Check if user exists by email."""
-    #     pass
-
     @abstractmethod
     async def create(self, user_schema: UserRegistrationInputSchema) -> UserInfoSchema:
         """Create a new user in db."""
@@ -38,8 +33,18 @@ class IUserRepository:
         pass
 
     @abstractmethod
+    async def get_user_info_by_email(self, email: EmailStr) -> UserInfoSchema | None:
+        """Get user info by email."""
+        pass
+
+    @abstractmethod
     async def update_profile(
         self, user_id: UIDType, profile_schema: ProfileUpdateSchema
     ) -> UserInfoSchema:
         """Update user profile."""
+        pass
+
+    @abstractmethod
+    async def activate_user(self, user_id: UIDType) -> None:
+        """Activate user."""
         pass

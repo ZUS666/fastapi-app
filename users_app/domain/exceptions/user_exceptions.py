@@ -14,3 +14,18 @@ class UserAlreadyExistError(AppException):
 class InvalidPasswordError(AppException):
     status_code = 400
     detail = 'Invalid password'
+
+
+class UserAlreadyActivatedError(AppException):
+    status_code = 400
+    detail = 'User already activated'
+
+
+class InvalidActivationCodeError(AppException):
+    status_code = 400
+    detail = 'Invalid activation code'
+
+
+class UserNotActivatedError(AppException):
+    status_code = 400
+    detail = 'User not activated'

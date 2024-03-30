@@ -11,7 +11,6 @@ class Impl:
         self.container: Container = Container()
 
     def __call__(self, *args, **kwargs) -> Self:
-        print(id(self))
         if self not in self._instances:
             instance = super().__call__(*args, **kwargs)
             self._instances[self] = instance

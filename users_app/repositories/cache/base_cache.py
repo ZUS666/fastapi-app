@@ -2,14 +2,16 @@ from abc import abstractmethod
 
 from pydantic import BaseModel
 
+from domain.schemas.user_schemas import UserInfoSchema
+
 
 class IBaseCache:
     @abstractmethod
-    def get(self, key: str) -> BaseModel:
+    async def get(self, key: str) -> BaseModel:
         pass
 
     @abstractmethod
-    def set(self, key: str, schema: BaseModel) -> None:
+    async def set(self, key: str, schema: BaseModel) -> None:
         pass
 
     @abstractmethod
@@ -18,7 +20,13 @@ class IBaseCache:
 
 
 class IUserBaseCache(IBaseCache):
-    pass
+    @abstractmethod
+    async def get(self, key: str) -> UserInfoSchema:
+        pass
+
+    @abstractmethod
+    async def set(self, key: str, schema: UserInfoSchema) -> None:
+        pass
 
 
 class IUserCodeCache(IUserBaseCache):

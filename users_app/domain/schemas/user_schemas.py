@@ -65,14 +65,6 @@ class UserInfoSchema(BaseModel):
     profile: ProfileSchema
 
 
-# class UserQueriesSchema(BaseModel):
-#     """Schema for query parameters."""
-
-#     limit: Annotated[int, Query(min_value=1, max_value=20, default=10)]
-#     offset: Annotated[int, Query(min_value=0, default=0)]
-#     order_by: Annotated[UsersOrderBy, Query(default=UsersOrderBy.user_id)]
-
-
 class UserLoginSchema(BaseModel):
     """Schema for user login."""
 
@@ -82,6 +74,7 @@ class UserLoginSchema(BaseModel):
 
 class UserCredentialsSchema(UserLoginSchema):
     user_id: UIDType
+    is_active: bool
 
 
 class ProfileSchema(BaseModel):
@@ -97,3 +90,15 @@ class ProfileUpdateSchema(ProfileSchema):
         if self.first_name is None and self.last_name is None:
             raise ValueError('One or more values must be set')
         return self
+
+
+class ResendActivationSchema(BaseModel):
+    email: EmailStr
+
+
+class SuccessResponse(BaseModel):
+    success: bool
+
+
+class ActivationUserSchema(ResendActivationSchema):
+    code: str

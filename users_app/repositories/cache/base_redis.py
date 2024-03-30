@@ -1,4 +1,4 @@
-from core.redis_cache import RedisCache
+from repositories.cache.redis_connect import RedisCache
 
 
 class RedisBaseCache:

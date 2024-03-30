@@ -24,9 +24,7 @@ class Database:
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
         async with self.session() as session:
             try:
-                print(f'get_session {type(session)}')
                 yield session
             except exc.SQLAlchemyError as error:
-                print('ROLLBACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 await session.rollback()
                 raise error
