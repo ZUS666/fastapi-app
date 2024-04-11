@@ -45,3 +45,8 @@ class IUserRepository:
     async def activate_user(self, user_id: UIDType) -> None:
         """Activate user."""
         pass
+
+    @abstractmethod
+    async def change_password(self, user_id: UIDType, hashed_password: str) -> None:
+        """Change password."""
+        pass

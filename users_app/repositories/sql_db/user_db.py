@@ -75,3 +75,8 @@ class UserPostgres:
         stmt = update(User).where(User.user_id == user_id).values(is_active=True)
         await self.session.execute(statement=stmt)
         await self.session.commit()
+
+    async def change_password(self, user_id: UIDType, new_password: str) -> None:
+        stmt = update(User).where(User.user_id == user_id).values(password=new_password)
+        await self.session.execute(statement=stmt)
+        await self.session.commit()

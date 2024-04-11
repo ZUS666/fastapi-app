@@ -20,14 +20,10 @@ class ProfileSchema(BaseModel):
     last_name: Annotated[str, Field(max_length=MaxLength.FIRST_NAME)] | None = None
 
 
-class UserRegistrationInputSchema(BaseModel):
-    """Schema for user registration."""
-
+class UserPasswordsSchema(BaseModel):
     model_config = ConfigDict(
         regex_engine='python-re',
     )
-
-    email: EmailStr
     password: Annotated[
         str,
         Field(
@@ -35,13 +31,18 @@ class UserRegistrationInputSchema(BaseModel):
         ),
     ]
     re_password: str
-    profile: ProfileSchema | None = None
 
     @model_validator(mode='after')
     def check_passwords(self) -> Self:
         if self.password != self.re_password:
             raise ValueError('Passwords do not match')
         return self
+
+
+class UserRegistrationInputSchema(UserPasswordsSchema):
+    """Schema for user registration."""
+    email: EmailStr
+    profile: ProfileSchema | None = None
 
 
 class UserInfoSchema(BaseModel):
@@ -67,7 +68,7 @@ class ProfileUpdateSchema(ProfileSchema):
         return self
 
 
-class ResendActivationSchema(BaseModel):
+class EmailSchema(BaseModel):
     email: EmailStr
 
 
@@ -75,5 +76,9 @@ class SuccessResponse(BaseModel):
     success: bool
 
 
-class ActivationUserSchema(ResendActivationSchema):
+class ConfirmationUserSchema(EmailSchema):
     code: str
+
+
+class ResetPasswordSchema(ConfirmationUserSchema, UserPasswordsSchema):
+    pass

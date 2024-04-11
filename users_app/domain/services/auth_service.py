@@ -91,7 +91,7 @@ class JWTService:
     def _get_user_id_from_token(token: str, expected_type: TokenEnum) -> UIDType:
         """Get user id from token."""
         try:
-            payload: dict[str, str | int] = jwt.decode(
+            payload: dict[str, str | int | UIDType] = jwt.decode(
                 token=token,
                 key=settings.token.secret_key,
                 algorithms=TokenEnum.ALGORITHM.value,

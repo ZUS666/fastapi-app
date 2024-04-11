@@ -1,13 +1,9 @@
-import uuid
-
 import bcrypt
 
-from adapters.broker.notify_base import INotifyService
 from core.dependency import impl
-from domain.constants.user_constants import LEN_CONFIRMATION_CODE
 from domain.custom_types.types_users import UIDType
 from domain.exceptions.user_exceptions import (
-    InvalidActivationCodeError,
+    InvalidConfirmationCodeError,
     InvalidPasswordError,
     UserAlreadyActivatedError,
     UserAlreadyExistError,
@@ -16,10 +12,11 @@ from domain.exceptions.user_exceptions import (
 )
 from domain.schemas.auth_schemas import TokenResponseSchema
 from domain.schemas.user_schemas import (
-    ActivationUserSchema,
+    ConfirmationUserSchema,
+    EmailSchema,
     ProfileSchema,
     ProfileUpdateSchema,
-    ResendActivationSchema,
+    ResetPasswordSchema,
     SuccessResponse,
     UserCredentialsSchema,
     UserInfoSchema,
@@ -27,8 +24,8 @@ from domain.schemas.user_schemas import (
     UserRegistrationInputSchema,
 )
 from domain.services.auth_service import JWTService
-from domain.services.notify_service import CreateNotifySendSchema
-from repositories.cache.base_cache import IUserCodeCache
+from domain.services.common_service import ConfirmationCodeService
+from domain.services.notify_service import CreateCodeNotifyUserService
 from repositories.repository import IUserRepository
 
 
@@ -47,25 +44,6 @@ class HashService:
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
-class ActivationCodeService:
-    def __init__(self):
-        self.cache: IUserCodeCache = impl.container.resolve(IUserCodeCache)
-
-    @staticmethod
-    def _get_random_code() -> str:
-        """Creates a random confirmation code."""
-        return str(uuid.uuid4().int)[:LEN_CONFIRMATION_CODE]
-
-    async def create_code(self, user_id: UIDType) -> str:
-        code = self._get_random_code()
-        await self.cache.set(str(user_id), code)
-        return code
-
-    async def verify_code(self, user_id: UIDType, code: str) -> bool:
-        cached_code = await self.cache.get(str(user_id))
-        return code == cached_code
-
-
 class UserService:
     def __init__(
         self,
@@ -78,7 +56,7 @@ class UserService:
         user_schema = await self.repository.create(user)
         if not user_schema:
             raise UserAlreadyExistError
-        await self._create_code_activation_notify_user(user_schema)
+        await CreateCodeNotifyUserService().activation_notify(user_schema)
         return user_schema
 
     async def login(
@@ -111,32 +89,45 @@ class UserService:
             raise UserNotFoundError
         return schema
 
-    async def resend_activation(self, email: ResendActivationSchema) -> SuccessResponse:
+    async def resend_activation(self, email: EmailSchema) -> SuccessResponse:
         """Resend activation."""
-        user = await self.repository.get_user_info_by_email(email.email)
-        if not user:
+        user_schema = await self.repository.get_user_info_by_email(email.email)
+        if not user_schema:
             raise UserNotFoundError
-        if user.is_active:
+        if user_schema.is_active:
             raise UserAlreadyActivatedError
-        await self._create_code_activation_notify_user(user)
+        await CreateCodeNotifyUserService().activation_notify(user_schema)
         return SuccessResponse(success=True)
 
-    async def activate_user(self, schema: ActivationUserSchema) -> SuccessResponse:
+    async def activate_user(self, schema: ConfirmationUserSchema) -> SuccessResponse:
         """Activate user."""
         user = await self.repository.get_by_email(schema.email)
         if not user:
             raise UserNotFoundError
         if user.is_active:
             raise UserAlreadyActivatedError
-        code = await ActivationCodeService().verify_code(user.user_id, schema.code)
+        code = await ConfirmationCodeService().verify_code(user.user_id, schema.code)
         if not code:
-            raise InvalidActivationCodeError
+            raise InvalidConfirmationCodeError
         await self.repository.activate_user(user.user_id)
         return SuccessResponse(success=True)
 
-    @staticmethod
-    async def _create_code_activation_notify_user(user_schema: UserInfoSchema) -> None:
-        code = await ActivationCodeService().create_code(user_schema.user_id)
-        notify_schema = CreateNotifySendSchema.activation_code(user_schema, code)
-        notify_service: INotifyService = impl.container.resolve(INotifyService)
-        await notify_service.notify(notify_schema)
+    async def reset_password_request(self, email: EmailSchema) -> SuccessResponse:
+        """Reset password request."""
+        user_schema = await self.repository.get_user_info_by_email(email.email)
+        if not user_schema:
+            raise UserNotFoundError
+        await CreateCodeNotifyUserService().reset_password_notify(user_schema)
+        return SuccessResponse(success=True)
+
+    async def reset_password(self, schema: ResetPasswordSchema) -> SuccessResponse:
+        """Reset password."""
+        user_schema = await self.repository.get_by_email(schema.email)
+        if not user_schema:
+            raise UserNotFoundError
+        code = await ConfirmationCodeService().verify_code(user_schema.user_id, schema.code)
+        if not code:
+            raise InvalidConfirmationCodeError
+        hashed_password = HashService.hash_password(schema.password)
+        await self.repository.change_password(user_schema.user_id, hashed_password)
+        return SuccessResponse(success=True)

@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
+
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -100,3 +101,8 @@ class UserRepository(IUserRepository):
         async with self.session() as session:
             db = UserPostgres(session)
             await db.activate_user(user_id)
+
+    async def change_password(self, user_id: UIDType, hashed_password: str) -> None:
+        async with self.session() as session:
+            db = UserPostgres(session)
+            await db.change_password(user_id, hashed_password)

@@ -21,9 +21,9 @@ class UserAlreadyActivatedError(AppException):
     detail = 'User already activated'
 
 
-class InvalidActivationCodeError(AppException):
+class InvalidConfirmationCodeError(AppException):
     status_code = 400
-    detail = 'Invalid activation code'
+    detail = 'Invalid confirmation code'
 
 
 class UserNotActivatedError(AppException):
