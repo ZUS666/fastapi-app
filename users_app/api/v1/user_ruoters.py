@@ -20,7 +20,7 @@ from domain.services.user_service import UserService
 user_router = APIRouter(prefix='/users', tags=['users'])
 
 
-@user_router.post('/signup')
+@user_router.post('/signup', status_code=201)
 async def create_user(
     regigration_schema: UserRegistrationInputSchema,
     service: Annotated[UserService, Depends(UserService)],
@@ -55,6 +55,7 @@ async def reconfirmation(
     email: EmailSchema,
     service: Annotated[UserService, Depends(UserService)],
 ) -> SuccessResponse:
+    """Resend activation code."""
     return await service.resend_activation(email)
 
 
@@ -63,6 +64,7 @@ async def activation(
     schema: ConfirmationUserSchema,
     service: Annotated[UserService, Depends(UserService)],
 ) -> SuccessResponse:
+    """Activation user."""
     return await service.activate_user(schema)
 
 
@@ -71,6 +73,7 @@ async def reset_password_request(
     email: EmailSchema,
     service: Annotated[UserService, Depends(UserService)],
 ) -> SuccessResponse:
+    """Request to reset password."""
     return await service.reset_password_request(email)
 
 
@@ -79,4 +82,5 @@ async def reset_password(
     schema: ResetPasswordSchema,
     service: Annotated[UserService, Depends(UserService)],
 ) -> SuccessResponse:
+    """Reset password with confirmation code from email."""
     return await service.reset_password(schema)
