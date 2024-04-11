@@ -33,6 +33,8 @@ services:
     image: zus666/simple_email_sender:latest
     env_file:
       - .env_notify
+    depends_on:
+      - rabbitmq
     restart: always
 
 volumes:
