@@ -15,7 +15,7 @@ from domain.services.user_service import UserService
 auth_router = APIRouter(prefix='/auth')
 
 
-@auth_router.post('/login/')
+@auth_router.post('/login')
 async def login_user(
     user_login_schema: UserLoginSchema,
     service: Annotated[UserService, Depends(UserService)],
@@ -24,7 +24,7 @@ async def login_user(
     return await service.login(user_login_schema)
 
 
-@auth_router.post('/token_refresh/')
+@auth_router.post('/token_refresh')
 async def refresh_token(
     token_schema: RefreshToAccessSchema,
     service: Annotated[JWTService, Depends(JWTService)],
