@@ -4,10 +4,11 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from domain.schemas.user_schemas import (
-    ActivationUserSchema,
+    ConfirmationUserSchema,
+    EmailSchema,
     ProfileSchema,
     ProfileUpdateSchema,
-    ResendActivationSchema,
+    ResetPasswordSchema,
     SuccessResponse,
     UserInfoSchema,
     UserRegistrationInputSchema,
@@ -16,7 +17,7 @@ from domain.services.auth_service import PermissionService
 from domain.services.user_service import UserService
 
 
-user_router = APIRouter(prefix='/users')
+user_router = APIRouter(prefix='/users', tags=['users'])
 
 
 @user_router.post('/signup')
@@ -51,7 +52,7 @@ async def update_current_user_info(
 
 @user_router.post('/resend_activation')
 async def reconfirmation(
-    email: ResendActivationSchema,
+    email: EmailSchema,
     service: Annotated[UserService, Depends(UserService)],
 ) -> SuccessResponse:
     return await service.resend_activation(email)
@@ -59,7 +60,23 @@ async def reconfirmation(
 
 @user_router.post('/activation')
 async def activation(
-    schema: ActivationUserSchema,
+    schema: ConfirmationUserSchema,
     service: Annotated[UserService, Depends(UserService)],
 ) -> SuccessResponse:
     return await service.activate_user(schema)
+
+
+@user_router.post('/reset_password_request')
+async def reset_password_request(
+    email: EmailSchema,
+    service: Annotated[UserService, Depends(UserService)],
+) -> SuccessResponse:
+    return await service.reset_password_request(email)
+
+
+@user_router.post('/reset_password')
+async def reset_password(
+    schema: ResetPasswordSchema,
+    service: Annotated[UserService, Depends(UserService)],
+) -> SuccessResponse:
+    return await service.reset_password(schema)
