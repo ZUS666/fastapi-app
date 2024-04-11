@@ -1,0 +1,17 @@
+registration_data = [
+    ('11111@yandex.ru', 'asdASD123@', 'asdASD123@', 'firstName', 'lastName', 201),
+    ('11111@yandex.ru', 'asdASD123@', 'asdASD123@', 'firstName', 'lastName', 400),
+    ('@yandex.ru', 'asdASD123@', 'asdASD123@', 'firstName', 'lastName', 422),
+    ('122yandex', 'asdASD123@', 'asdASD123@', 'firstName', 'lastName', 422),
+    ('asd@yandex', 'asdASD123@', 'asdASD123@', 'firstName', 'lastName', 422),
+    ('@yandex.ru', 'asdASD123@', 'asdASD123@', 'firstName', 'lastName', 422),
+    ('211111@yandex.ru', 'asdASD123@', 'asdASD123@', 'firstName', 'f'*101, 422),
+    ('121111@yandex.ru', 'asdASD123@', 'asdASD123@', 'f'*101, 'lastName', 422),
+    ('121111@yandex.ru', 'ASD123@', 'asdASD123@', 'firstName', 'lastName', 422),
+    ('121111@yandex.ru', 'asdASD123', 'asdASD123', 'firstName', 'lastName', 422),
+    ('121111@yandex.ru', 'asdaASD@', 'asdaASD@', 'firstName', 'lastName', 422),
+    ('121111@yandex.ru', 'asdaaaaaa', 'asdaaaaaa', 'firstName', 'lastName', 422),
+    (3123213123, 'asdASD123@', 'asdASD123@', 'firstName', 'lastName', 422),
+    ('121111@yandex.ru', 'asdASD123@', 'asdASD123@', 111, 'lastName', 422),
+    ('121111@yandex.ru', 'asdASD123@', 'asdASD123@', 'firstName', 222.2, 422),
+]
