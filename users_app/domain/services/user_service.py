@@ -28,7 +28,7 @@ from domain.schemas.user_schemas import (
 )
 from domain.services.auth_service import JWTService
 from domain.services.notify_service import CreateNotifySendSchema
-from repositories.cache.base_cache import IUserBaseCache, IUserCodeCache
+from repositories.cache.base_cache import IUserCodeCache
 from repositories.repository import IUserRepository
 
 
@@ -106,7 +106,10 @@ class UserService:
         self, user_id: UIDType, profile: ProfileUpdateSchema
     ) -> ProfileSchema:
         """Update profile."""
-        return await self.repository.update_profile(user_id, profile)
+        schema = await self.repository.update_profile(user_id, profile)
+        if not schema:
+            raise UserNotFoundError
+        return schema
 
     async def resend_activation(self, email: ResendActivationSchema) -> SuccessResponse:
         """Resend activation."""

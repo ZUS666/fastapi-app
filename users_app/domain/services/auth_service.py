@@ -17,7 +17,7 @@ from domain.schemas.auth_schemas import (
 
 class JWTService:
     @classmethod
-    def get_user_id_from_access_token(cls, token: str) -> int:
+    def get_user_id_from_access_token(cls, token: str) -> UIDType:
         """Get user id from token."""
         return cls._get_user_id_from_token(token, TokenEnum.access)
 
@@ -83,12 +83,12 @@ class JWTService:
         )
 
     @classmethod
-    def _get_user_id_from_refresh_token(cls, token: str) -> int:
+    def _get_user_id_from_refresh_token(cls, token: str) -> UIDType:
         """Get user id from token."""
         return cls._get_user_id_from_token(token, TokenEnum.refresh)
 
     @staticmethod
-    def _get_user_id_from_token(token: str, expected_type: TokenEnum) -> int:
+    def _get_user_id_from_token(token: str, expected_type: TokenEnum) -> UIDType:
         """Get user id from token."""
         try:
             payload: dict[str, str | int] = jwt.decode(
@@ -97,9 +97,7 @@ class JWTService:
                 algorithms=TokenEnum.ALGORITHM.value,
             )
             user_id = payload.get('user_id')
-            if payload.get('token_type') == expected_type.value and isinstance(
-                user_id, UIDType
-            ):
+            if payload.get('token_type') == expected_type.value:
                 return user_id
             raise InvalidTokenError
         except JWTError:

@@ -40,7 +40,7 @@ class UserPostgres:
         await self.session.commit()
         return user
 
-    async def get_user_info_by_id(self, user_id: UIDType) -> User:
+    async def get_user_info_by_id(self, user_id: UIDType) -> User | None:
         """Get user info by id."""
         stmt = (
             select(User)
@@ -60,7 +60,7 @@ class UserPostgres:
 
     async def update_profile(
         self, user_id: UIDType, profile_schema: ProfileUpdateSchema
-    ) -> Profile:
+    ) -> Profile | None:
         stmt = (
             update(Profile)
             .where(Profile.user_id == user_id)

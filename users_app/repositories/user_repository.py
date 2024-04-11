@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +23,9 @@ from repositories.sql_db.user_db import UserPostgres
 class UserRepository(IUserRepository):
     def __init__(self):
         self.cache: IUserBaseCache = impl.container.resolve(IUserBaseCache)
-        self.session: Callable[[], AsyncSession] = Database().get_session
+        self.session: Callable[
+            [], AbstractAsyncContextManager[AsyncSession]
+        ] = Database().get_session
 
     async def get_by_email(self, email: EmailStr) -> UserCredentialsSchema | None:
         async with self.session() as session:
@@ -46,12 +49,14 @@ class UserRepository(IUserRepository):
         await self.cache.set(key=str(schema.user_id), schema=schema,)
         return schema
 
-    async def get_user_info_by_id(self, user_id: UIDType) -> UserInfoSchema:
+    async def get_user_info_by_id(self, user_id: UIDType) -> UserInfoSchema | None:
         user_cache = await self.cache.get(str(user_id))
         if user_cache:
             return user_cache
         async with self.session() as session:
-            user: User = await UserPostgres(session).get_user_info_by_id(user_id)
+            user: User | None = await UserPostgres(session).get_user_info_by_id(user_id)
+        if not user:
+            return None
         schema = UserInfoSchema.model_validate(user, from_attributes=True)
         await self.cache.set(str(user_id), schema)
         return schema
@@ -73,11 +78,13 @@ class UserRepository(IUserRepository):
         self,
         user_id: UIDType,
         profile_schema: ProfileUpdateSchema
-    ) -> ProfileSchema:
+    ) -> ProfileSchema | None:
         async with self.session() as session:
-            profile: Profile = await UserPostgres(session).update_profile(
+            profile: Profile | None = await UserPostgres(session).update_profile(
                 user_id, profile_schema
             )
+        if not profile:
+            return None
         schema = ProfileSchema.model_validate(profile, from_attributes=True)
         user_cache = await self.cache.get(str(user_id))
         if user_cache:

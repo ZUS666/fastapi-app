@@ -37,7 +37,7 @@ class IUserRepository:
     @abstractmethod
     async def update_profile(
         self, user_id: UIDType, profile_schema: ProfileUpdateSchema
-    ) -> ProfileSchema:
+    ) -> ProfileSchema | None:
         """Update user profile."""
         pass
 
