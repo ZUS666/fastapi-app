@@ -1,11 +1,11 @@
-import json
-import re
+import random
 
 import pytest
 from httpx import AsyncClient
 
-from .confest import *
 from .test_data import registration_data
+from .utils import get_code_capsys
+from repositories.sql_db.models.user import User
 
 
 @pytest.mark.asyncio
@@ -107,6 +107,9 @@ class TestUserRegistraion:
 class TestUserConfirmation:
     sign_up_url = '/users/signup'
     activation_url = '/users/activation'
+    resend_activation_url = '/users/resend_activation'
+    reset_password = '/users/reset_password'
+    reset_password_request = '/users/reset_password_request'
 
     async def test_activation(self, client: AsyncClient, capsys: pytest.CaptureFixture) -> None:
         data = {
@@ -115,12 +118,75 @@ class TestUserConfirmation:
             're_password': 'password123PASS@',
         }
         await client.post(self.sign_up_url, json=data)
-        captured = capsys.readouterr().out
-        pattern = r"'code': '([^']+)'"
-        code = re.search(pattern, captured).group(1)
         act_data = {
             'email': data['email'],
-            'code': code
+            'code': get_code_capsys(capsys)
         }
         response = await client.post(self.activation_url, json=act_data)
         assert response.status_code == 200
+
+    async def test_activation_resend_fake_mail(
+        self,
+        client: AsyncClient,
+    ) -> None:
+        data = {
+            'email': 'fakemail@gmail.com',
+        }
+        response = await client.post(self.resend_activation_url, json=data)
+        assert response.status_code == 404, ('Failed resend activation fake mail')
+
+    async def test_activation_resend(
+        self,
+        client: AsyncClient,
+        capsys: pytest.CaptureFixture,
+        inactive_user: User,
+    ) -> None:
+        inactive_email = inactive_user.email
+        data = {
+            'email': inactive_email
+        }
+        response = await client.post(self.resend_activation_url, json=data)
+        assert response.status_code == 200, ('Failed resend activation')
+        response_fake_code = await client.post(
+            self.activation_url,
+            json={'email': inactive_email, 'code': str(random.randint(0, 9999999))}
+        )
+        assert response_fake_code.status_code == 400, ('Fake code activation request')
+        data = {
+            'email': inactive_email,
+            'code': get_code_capsys(capsys)
+        }
+        activ_response = await client.post(
+            self.activation_url,
+            json=data
+        )
+        assert activ_response.status_code == 200, ('Failed activation with code')
+        re_activ_response = await client.post(
+            self.activation_url,
+            json=data
+        )
+        assert re_activ_response.status_code == 400, ('Activation after success')
+
+    async def test_reset_password(
+        self,
+        client: AsyncClient,
+        active_user: User,
+        capsys: pytest.CaptureFixture,
+    ) -> None:
+        response = await client.post(
+            self.reset_password_request,
+            json={'email': active_user.email}
+        )
+        assert response.status_code == 200, ('Failed reset password request')
+        new_password = 'password123PASS@'
+        data = {
+            'email': active_user.email,
+            'password': new_password,
+            're_password': new_password,
+            'code': get_code_capsys(capsys)
+        }
+        response = await client.post(
+            self.reset_password,
+            json=data
+        )
+        assert response.status_code == 200, ('Failed reset password')

@@ -13,10 +13,14 @@ from adapters.broker.notify_base import INotifyService
 from api.v1.routers import router_v1
 from core.dependency import impl
 from core.exception_handler import ExceptionHandlerMiddleware
+from domain.services.user_service import HashService
 from repositories.cache.base_cache import IUserBaseCache, IUserCodeCache
 from repositories.cache.user_redis import UserCodeRedisCache, UserRedisCache
 from repositories.repository import IUserRepository
 from repositories.sql_db.admin.sql_admin import build_admin
+from repositories.sql_db.models import User
+from repositories.sql_db.models.user import Profile
+from repositories.sql_db.session import Database
 from repositories.user_repository import UserRepository
 
 
@@ -44,6 +48,36 @@ def tables():
     upgrade(alembic, "head")
     yield
     downgrade(alembic, "base")
+
+
+@pytest.fixture(scope="function")
+async def active_user():
+    hashed_pw = HashService.hash_password('fakepass')
+    active = User(
+        email='active@main.com',
+        password=hashed_pw,
+        is_active=True,
+    )
+    active.profile = Profile(first_name='test', last_name='test')
+    async with Database().get_session() as db:
+        db.add(active)
+        await db.commit()
+        return active
+
+
+@pytest.fixture(scope="function")
+async def inactive_user():
+    hashed_pw = HashService.hash_password('fakepass')
+    inactive = User(
+        email='inactive@main.com',
+        password=hashed_pw,
+        is_active=False,
+    )
+    inactive.profile = Profile(first_name='test', last_name='test')
+    async with Database().get_session() as db:
+        db.add(inactive)
+        await db.commit()
+        return inactive
 
 
 @pytest.fixture(scope="function")
