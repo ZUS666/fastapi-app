@@ -1,3 +1,4 @@
+import asyncio
 import bcrypt
 
 from core.dependency import impl
@@ -34,7 +35,7 @@ class HashService:
     def hash_password(password: str) -> str:
         """Hash password."""
         password_bytes = password.encode('utf-8')
-        salt = bcrypt.gensalt()
+        salt = bcrypt.gensalt(12)
         hash = bcrypt.hashpw(password_bytes, salt)
         return hash.decode('utf-8')
 
@@ -56,7 +57,7 @@ class UserService:
         user_schema = await self.repository.create(user)
         if not user_schema:
             raise UserAlreadyExistError
-        await CreateCodeNotifyUserService().activation_notify(user_schema)
+        asyncio.create_task(CreateCodeNotifyUserService().activation_notify(user_schema))
         return user_schema
 
     async def login(
@@ -96,7 +97,7 @@ class UserService:
             raise UserNotFoundError
         if user_schema.is_active:
             raise UserAlreadyActivatedError
-        await CreateCodeNotifyUserService().activation_notify(user_schema)
+        asyncio.create_task(CreateCodeNotifyUserService().activation_notify(user_schema))
         return SuccessResponse(success=True)
 
     async def activate_user(self, schema: ConfirmationUserSchema) -> SuccessResponse:
@@ -117,7 +118,7 @@ class UserService:
         user_schema = await self.repository.get_user_info_by_email(email.email)
         if not user_schema:
             raise UserNotFoundError
-        await CreateCodeNotifyUserService().reset_password_notify(user_schema)
+        asyncio.create_task(CreateCodeNotifyUserService().reset_password_notify(user_schema))
         return SuccessResponse(success=True)
 
     async def reset_password(self, schema: ResetPasswordSchema) -> SuccessResponse:
