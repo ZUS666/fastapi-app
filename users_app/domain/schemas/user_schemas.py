@@ -2,6 +2,8 @@ from typing import Annotated, Self
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
+from core.settings import settings
+from domain.constants.avatar_constants import AVATAR_BUCKET
 from domain.constants.user_constants import MaxLength
 from domain.custom_types.types_users import UIDType
 from domain.schemas.auth_schemas import UserLoginSchema
@@ -18,6 +20,22 @@ class UserSchema(BaseModel):
 class ProfileSchema(BaseModel):
     first_name: Annotated[str, Field(max_length=MaxLength.FIRST_NAME)] | None = None
     last_name: Annotated[str, Field(max_length=MaxLength.FIRST_NAME)] | None = None
+
+
+class ProfileInfoSchema(ProfileSchema):
+    avatar: str | None = None
+
+    @property
+    def prefix(self) -> str:
+        return settings.storage.storage_path + AVATAR_BUCKET
+
+    def add_path_avatar(self) -> None:
+        if self.avatar is not None:
+            self.avatar = self.prefix + self.avatar
+
+    def remove_path_avatar(self) -> None:
+        if self.avatar is not None:
+            self.avatar = self.avatar.replace(self.prefix, '')
 
 
 class UserPasswordsSchema(BaseModel):
@@ -48,7 +66,7 @@ class UserRegistrationInputSchema(UserPasswordsSchema):
 class UserInfoSchema(BaseModel):
     user_id: UIDType
     email: EmailStr
-    profile: ProfileSchema
+    profile: ProfileInfoSchema
 
 
 class UserInfoSchemaActive(UserInfoSchema):
@@ -70,10 +88,6 @@ class ProfileUpdateSchema(ProfileSchema):
 
 class EmailSchema(BaseModel):
     email: EmailStr
-
-
-class SuccessResponse(BaseModel):
-    success: bool
 
 
 class ConfirmationUserSchema(EmailSchema):

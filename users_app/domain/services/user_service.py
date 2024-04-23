@@ -1,4 +1,5 @@
 import asyncio
+
 import bcrypt
 
 from core.dependency import impl
@@ -12,13 +13,13 @@ from domain.exceptions.user_exceptions import (
     UserNotFoundError,
 )
 from domain.schemas.auth_schemas import TokenResponseSchema
+from domain.schemas.common_schemas import SuccessResponse
 from domain.schemas.user_schemas import (
     ConfirmationUserSchema,
     EmailSchema,
     ProfileSchema,
     ProfileUpdateSchema,
     ResetPasswordSchema,
-    SuccessResponse,
     UserCredentialsSchema,
     UserInfoSchema,
     UserLoginSchema,
@@ -36,8 +37,8 @@ class HashService:
         """Hash password."""
         password_bytes = password.encode('utf-8')
         salt = bcrypt.gensalt(12)
-        hash = bcrypt.hashpw(password_bytes, salt)
-        return hash.decode('utf-8')
+        hashed_password = bcrypt.hashpw(password_bytes, salt)
+        return hashed_password.decode('utf-8')
 
     @staticmethod
     def verify_password(password: str, hashed_password: str) -> bool:
@@ -49,12 +50,12 @@ class UserService:
     def __init__(
         self,
     ) -> None:
-        self.repository: IUserRepository = impl.container.resolve(IUserRepository)
+        self._repository: IUserRepository = impl.container.resolve(IUserRepository)
 
     async def create(self, user: UserRegistrationInputSchema) -> UserInfoSchema:
         """Create new user in database."""
         user.password = HashService.hash_password(user.password)
-        user_schema = await self.repository.create(user)
+        user_schema = await self._repository.create(user)
         if not user_schema:
             raise UserAlreadyExistError
         asyncio.create_task(CreateCodeNotifyUserService().activation_notify(user_schema))
@@ -65,7 +66,7 @@ class UserService:
         user_login: UserLoginSchema,
     ) -> TokenResponseSchema:
         """Login user returning tokens."""
-        user: UserCredentialsSchema | None = await self.repository.get_by_email(user_login.email)
+        user: UserCredentialsSchema | None = await self._repository.get_by_email(user_login.email)
         if not user:
             raise UserNotFoundError
         if not user.is_active:
@@ -76,23 +77,24 @@ class UserService:
 
     async def get_user_info_by_id(self, user_id: UIDType) -> UserInfoSchema:
         """Get user info."""
-        user_schema = await self.repository.get_user_info_by_id(user_id)
+        user_schema = await self._repository.get_user_info_by_id(user_id)
         if not user_schema:
             raise UserNotFoundError
+        user_schema.profile.add_path_avatar()
         return user_schema
 
     async def update_profile(
         self, user_id: UIDType, profile: ProfileUpdateSchema
     ) -> ProfileSchema:
         """Update profile."""
-        schema = await self.repository.update_profile(user_id, profile)
+        schema = await self._repository.update_profile(user_id, profile)
         if not schema:
             raise UserNotFoundError
         return schema
 
     async def resend_activation(self, email: EmailSchema) -> SuccessResponse:
         """Resend activation."""
-        user_schema = await self.repository.get_user_info_by_email(email.email)
+        user_schema = await self._repository.get_user_info_by_email(email.email)
         if not user_schema:
             raise UserNotFoundError
         if user_schema.is_active:
@@ -102,7 +104,7 @@ class UserService:
 
     async def activate_user(self, schema: ConfirmationUserSchema) -> SuccessResponse:
         """Activate user."""
-        user = await self.repository.get_by_email(schema.email)
+        user = await self._repository.get_by_email(schema.email)
         if not user:
             raise UserNotFoundError
         if user.is_active:
@@ -110,12 +112,12 @@ class UserService:
         code = await ConfirmationCodeService().verify_code(user.user_id, schema.code)
         if not code:
             raise InvalidConfirmationCodeError
-        await self.repository.activate_user(user.user_id)
+        await self._repository.activate_user(user.user_id)
         return SuccessResponse(success=True)
 
     async def reset_password_request(self, email: EmailSchema) -> SuccessResponse:
         """Reset password request."""
-        user_schema = await self.repository.get_user_info_by_email(email.email)
+        user_schema = await self._repository.get_user_info_by_email(email.email)
         if not user_schema:
             raise UserNotFoundError
         asyncio.create_task(CreateCodeNotifyUserService().reset_password_notify(user_schema))
@@ -123,12 +125,12 @@ class UserService:
 
     async def reset_password(self, schema: ResetPasswordSchema) -> SuccessResponse:
         """Reset password."""
-        user_schema = await self.repository.get_by_email(schema.email)
+        user_schema = await self._repository.get_by_email(schema.email)
         if not user_schema:
             raise UserNotFoundError
         code = await ConfirmationCodeService().verify_code(user_schema.user_id, schema.code)
         if not code:
             raise InvalidConfirmationCodeError
         hashed_password = HashService.hash_password(schema.password)
-        await self.repository.change_password(user_schema.user_id, hashed_password)
+        await self._repository.change_password(user_schema.user_id, hashed_password)
         return SuccessResponse(success=True)

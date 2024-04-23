@@ -51,4 +51,5 @@ class Profile(Base):
     )
     first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    avatar: Mapped[str | None] = mapped_column(String(128), nullable=True)
     user: Mapped['User'] = relationship('User', back_populates='profile')

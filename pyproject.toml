@@ -21,6 +21,11 @@ passlib = "^1.7.4"
 bcrypt = "^4.1.2"
 sqladmin = "^0.16.1"
 aio-pika = "^9.4.0"
+aioboto3 = "^12.3.0"
+types-aiobotocore = "^2.12.3"
+types-aioboto3 = {extras = ["essential"], version = "^12.3.0"}
+python-multipart = "^0.0.9"
+aiofiles = "^23.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -33,6 +38,7 @@ types-python-jose = "^3.3.4.20240106"
 httpx = "^0.27.0"
 pytest-asyncio = "^0.23.6"
 pytest-dotenv = "^0.5.2"
+types-aiofiles = "^23.2.0.20240403"
 
 [build-system]
 requires = ["poetry-core"]
@@ -40,7 +46,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 90
-exclude = [".venv", "app/migrations/env.py"]
+exclude = [".venv", "app/migrations/env.py", ".*"]
 preview = true
 show-fixes = true
 

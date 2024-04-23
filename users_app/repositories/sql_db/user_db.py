@@ -64,7 +64,10 @@ class UserPostgres:
         stmt = (
             update(Profile)
             .where(Profile.user_id == user_id)
-            .values(**profile_schema.model_dump(exclude_none=True))
+            .values(**profile_schema.model_dump(
+                exclude_none=True,
+                include={'first_name', 'last_name'})
+                )
             .returning(Profile)
         )
         profile = await self.session.scalar(statement=stmt)
@@ -78,5 +81,10 @@ class UserPostgres:
 
     async def change_password(self, user_id: UIDType, new_password: str) -> None:
         stmt = update(User).where(User.user_id == user_id).values(password=new_password)
+        await self.session.execute(statement=stmt)
+        await self.session.commit()
+
+    async def update_user_avatar(self, user_id: UIDType, avatar_name: str) -> None:
+        stmt = update(Profile).where(Profile.user_id == user_id).values(avatar=avatar_name)
         await self.session.execute(statement=stmt)
         await self.session.commit()

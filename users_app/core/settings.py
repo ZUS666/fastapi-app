@@ -30,11 +30,19 @@ class AMQPSettings(Settings):
     amqp_url: str
 
 
+class StorageSettings(Settings):
+    storage_path: str
+    s3_key: str
+    s3_secret: str
+    s3_region_name: str
+
+
 class MainSettings(BaseSettings):
     db: DBSettings
     token: TokenSettings
     redis: RedisSettings
     amqp: AMQPSettings
+    storage: StorageSettings
 
 
 @lru_cache
@@ -44,6 +52,7 @@ def get_settings() -> MainSettings:
         token=TokenSettings(),
         redis=RedisSettings(),
         amqp=AMQPSettings(),
+        storage=StorageSettings(),
     )  # type: ignore [call-arg]
 
 

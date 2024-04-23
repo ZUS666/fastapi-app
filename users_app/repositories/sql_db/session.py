@@ -1,7 +1,6 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from sqlalchemy import exc
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from core.settings import settings
@@ -25,6 +24,6 @@ class Database:
         async with self.session() as session:
             try:
                 yield session
-            except exc.SQLAlchemyError as error:
+            except Exception as error:
                 await session.rollback()
                 raise error

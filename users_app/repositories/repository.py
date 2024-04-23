@@ -50,3 +50,8 @@ class IUserRepository:
     async def change_password(self, user_id: UIDType, hashed_password: str) -> None:
         """Change password."""
         pass
+
+    @abstractmethod
+    async def update_user_avatar(self, user_id: UIDType, avatar_name: str) -> None:
+        """Update user avatar."""
+        pass

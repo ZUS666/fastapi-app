@@ -3,13 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from domain.schemas.common_schemas import SuccessResponse
 from domain.schemas.user_schemas import (
     ConfirmationUserSchema,
     EmailSchema,
     ProfileSchema,
     ProfileUpdateSchema,
     ResetPasswordSchema,
-    SuccessResponse,
     UserInfoSchema,
     UserRegistrationInputSchema,
 )
