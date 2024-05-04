@@ -113,11 +113,11 @@ class TestUserConfirmation:
 
     async def test_activation(self, client: AsyncClient, capsys: pytest.CaptureFixture) -> None:
         data = {
-            "email": 'activ@gmail.com',
+            "email": 'test_activation@gmail.com',
             'password': 'password123PASS@',
             're_password': 'password123PASS@',
         }
-        await client.post(self.sign_up_url, json=data)
+        r = await client.post(self.sign_up_url, json=data)
         act_data = {
             'email': data['email'],
             'code': get_code_capsys(capsys)
@@ -130,7 +130,7 @@ class TestUserConfirmation:
         client: AsyncClient,
     ) -> None:
         data = {
-            'email': 'fakemail@gmail.com',
+            'email': 'test_activation_resend_fake_mail@gmail.com',
         }
         response = await client.post(self.resend_activation_url, json=data)
         assert response.status_code == 404, ('Failed resend activation fake mail')
