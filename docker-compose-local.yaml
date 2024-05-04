@@ -7,11 +7,15 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: fastapidb
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
   
   redis:
     image: redis:latest
+    ports:
+      - "6379:6379"
   
   rabbitmq:
     image: rabbitmq:3.9-management
@@ -20,6 +24,7 @@ services:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
     ports:
+      - 5672:5672
       - 15672:15672
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -32,18 +37,6 @@ services:
       - rabbitmq
     restart: always
   
-  users_service:
-    build:
-      context: ./
-    restart: always
-    depends_on:
-      - rabbitmq
-    env_file:
-      - .env_users
-    ports:
-      - "8000:8000"
-
-
 volumes:
   postgres_data:
   rabbitmq_data:

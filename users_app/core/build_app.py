@@ -23,7 +23,9 @@ def build_app() -> FastAPI:
         (IUserCodeCache, UserCodeRedisCache),
     )
     impl.register_all(injections)
-    app = FastAPI()
+    app = FastAPI(
+        docs_url='/api/docs',
+    )
     build_admin(app)
     app.include_router(get_routers_v1())
     app.add_middleware(ExceptionHandlerMiddleware)
