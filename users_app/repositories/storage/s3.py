@@ -10,7 +10,10 @@ if TYPE_CHECKING:
     from types_aiobotocore_s3 import S3Client
 
 
-class S3Storage:
+from repositories.storage.base import IStorage
+
+
+class S3Storage(IStorage):
     def __init__(self) -> None:
         self._client: Callable[[], AbstractAsyncContextManager[S3Client]] = ClientS3().get
 

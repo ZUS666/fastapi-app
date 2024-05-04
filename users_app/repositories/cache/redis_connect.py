@@ -1,9 +1,12 @@
+from functools import cache
+
 from redis import asyncio as redis
 
 from core.settings import settings
 
 
 class RedisCache:
+    @cache
     @staticmethod
     def connect():
         pool = redis.ConnectionPool.from_url(settings.redis.redis_url)
