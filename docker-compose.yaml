@@ -33,8 +33,7 @@ services:
     restart: always
   
   users_service:
-    build:
-      context: ./
+    image: zus666/users_service:latest
     restart: always
     depends_on:
       - rabbitmq
